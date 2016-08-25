@@ -52,7 +52,7 @@ void callback (char* topic, byte* payload, unsigned int len) {
 
 
     Serial.println(F("CALLBACK"));
-/*
+
     char payload_buffer[20];
 
 
@@ -61,12 +61,12 @@ void callback (char* topic, byte* payload, unsigned int len) {
         byteToChar(payload, payload_buffer, len);
 
         if (strcmp(payload_buffer, "permitir") == 0) {
-          Serial.println(F("Abreeee!!!!!!"));
+          Serial.println(F("Abreeee!!!!!!")); Serial.println(payload);
         } else {
           Serial.println(F("Não abre!!!!!!"));
         }
 
-    }*/
+    }
 }
 
 cc3000_PubSubClient mqttclient(server.ip, 1883, callback, client, cc3000);

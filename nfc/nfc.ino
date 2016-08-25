@@ -48,13 +48,17 @@ union ArrayToIp {
 //ArrayToIp server = { 25, 0, 25, 172 };
 ArrayToIp server = { 45, 235, 191, 179 };
 
-void callback (char* topic, byte* payload, unsigned int lenght) {
+void callback (char* topic, byte* payload, unsigned int len) {
 
+
+    Serial.println(F("CALLBACK"));
+/*
     char payload_buffer[20];
+
 
     if (strcmp (topic,"/ocean/nfc/porta") == 0) {
 
-        byteToChar(payload, payload_buffer, lenght);
+        byteToChar(payload, payload_buffer, len);
 
         if (strcmp(payload_buffer, "permitir") == 0) {
           Serial.println(F("Abreeee!!!!!!"));
@@ -62,7 +66,7 @@ void callback (char* topic, byte* payload, unsigned int lenght) {
           Serial.println(F("Não abre!!!!!!"));
         }
 
-    }
+    }*/
 }
 
 cc3000_PubSubClient mqttclient(server.ip, 1883, callback, client, cc3000);
@@ -155,6 +159,7 @@ void setup(void) {
     if (mqttclient.connect("ArduinoUnoClient-CC3000-A2", "iotocean", "NZZOLd0O66oLS0vpajiA123")) {
       Serial.println(F("Publicando"));
       mqttclient.publish("/ocean/nfc/debug","A2 está online");
+      mqttclient.subscribe("/ocean/nfc/porta");
     }
     else {
       Serial.println(F("Ouve um erro ao conectar-se ao broker"));
@@ -165,7 +170,9 @@ void setup(void) {
 
 
 void loop(void) {
+  
   delay(1000);
+  
   Serial.println(F("Entrei no loop\n"));
   uint8_t success;
   uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
@@ -221,6 +228,7 @@ void loop(void) {
     Serial.println(F(""));
   }
 
+  mqttclient.loop(); // nunca esqueca disso!
   
   Serial.println(F("Sai do loop\n"));
 }

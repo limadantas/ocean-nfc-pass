@@ -53,23 +53,21 @@ void callback (char* topic, byte* payload, unsigned int len) {
 
     Serial.println(F("CALLBACK"));
 
-    char payload_buffer[20];
-
-
-    if (strcmp (topic,"/ocean/nfc/porta") == 0) {
-
-        byteToChar(payload, payload_buffer, len);
-
-        if (strcmp(payload_buffer, "permitir") == 0) {
-          Serial.println(F("Abreeee!!!!!!")); Serial.println(payload);
-        } else {
-          Serial.println(F("Não abre!!!!!!"));
-        }
-
+    if (String((char *)payload).startsWith(String("S"))) {
+      Serial.println(F("ABREEE"));
+      debug("Abrindo porta");
     }
+    else {
+      debug("Entrada não permitida");
+    }
+
 }
 
 cc3000_PubSubClient mqttclient(server.ip, 1883, callback, client, cc3000);
+
+void debug(char *s) {
+  mqttclient.publish("/ocean/nfc/debug",s);
+}
 
 void setup(void) {
   
@@ -165,7 +163,7 @@ void setup(void) {
       Serial.println(F("Ouve um erro ao conectar-se ao broker"));
     }
    } 
-  
+  nfc.setPassiveActivationRetries(0x1E);
 }
 
 

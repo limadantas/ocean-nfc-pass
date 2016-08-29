@@ -6,6 +6,9 @@
 //#include <SPI.h>
 #include <cc3000_PubSubClient.h>
 
+#define RELAY_PIN   12
+#define BUZZER_PIN  8
+
 #define PN532_IRQ   (4)
 #define PN532_RESET (3)  // Not connected by default on the NFC Shield
 
@@ -56,8 +59,22 @@ void callback (char* topic, byte* payload, unsigned int len) {
     if (String((char *)payload).startsWith(String("S"))) {
       Serial.println(F("ABREEE"));
       debug("Abrindo porta");
+      digitalWrite(RELAY_PIN, HIGH);
+      delay(500);
+      digitalWrite(RELAY_PIN, LOW);
     }
-    else {
+    else if (String((char *)payload).startsWith(String("A"))) {
+      Serial.println(F("ABREEE"));
+      debug("Abrindo porta");
+      digitalWrite(RELAY_PIN, HIGH);
+    }
+    else if (String((char *)payload).startsWith(String("F"))) {
+      Serial.println(F("ABREEE"));
+      debug("Abrindo porta");
+      digitalWrite(RELAY_PIN, LOW);
+    }
+    else 
+    {
       debug("Entrada não permitida");
     }
 
@@ -69,7 +86,11 @@ void debug(char *s) {
   mqttclient.publish("/ocean/nfc/debug",s);
 }
 
+
 void setup(void) {
+
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, LOW);
   
   #ifndef ESP8266
     while (!Serial); // for Leonardo/Micro/Zero

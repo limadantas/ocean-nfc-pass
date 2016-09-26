@@ -5,14 +5,20 @@
 //#include <ccspi.h>
 //#include <SPI.h>
 #include <cc3000_PubSubClient.h>
+#include <Adafruit_SleepyDog.h>
 
-#define RELAY_PIN   12
+#define RELAY_PIN   A5
 #define BUZZER_PIN  8
+#define RED  A0
+#define GREEN  A1
+#define BLUE   A2
 
 #define PN532_IRQ   (4)
 #define PN532_RESET (3)  // Not connected by default on the NFC Shield
 
 char cardID[ 16 ];
+
+uint32_t cards[] = { 296057479, 999246693 };
 
 Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
 
@@ -53,31 +59,56 @@ ArrayToIp server = { 45, 235, 191, 179 };
 
 void callback (char* topic, byte* payload, unsigned int len) {
 
-
-    Serial.println(F("CALLBACK"));
-
     if (String((char *)payload).startsWith(String("S"))) {
-      Serial.println(F("ABREEE"));
+      //Serial.println(F("ABREEE"));
       debug("Abrindo porta");
+      
+      analogWrite(RED, 0);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+      analogWrite(GREEN, 200);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+      analogWrite(BLUE, 0);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+      
       digitalWrite(RELAY_PIN, HIGH);
-      delay(500);
+      delay(1000);
       digitalWrite(RELAY_PIN, LOW);
+
+      
+      analogWrite(RED, 150);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+      analogWrite(GREEN, 0);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+      analogWrite(BLUE, 150);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
     }
     else if (String((char *)payload).startsWith(String("A"))) {
-      Serial.println(F("ABREEE"));
+
+      analogWrite(RED, 0);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+      analogWrite(GREEN, 200);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+      analogWrite(BLUE, 0);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+      
+      //Serial.println(F("ABREEE"));
       debug("Abrindo porta");
       digitalWrite(RELAY_PIN, HIGH);
     }
     else if (String((char *)payload).startsWith(String("F"))) {
-      Serial.println(F("ABREEE"));
-      debug("Abrindo porta");
+      //Serial.println(F("Fechando"));
+      debug("Fechando porta");
       digitalWrite(RELAY_PIN, LOW);
+
+      
+      analogWrite(RED,150);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+      analogWrite(GREEN, 0);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+      analogWrite(BLUE, 150);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
     }
     else 
     {
+      
+      analogWrite(RED, 200);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+      analogWrite(GREEN, 0);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+      analogWrite(BLUE, 0);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
       debug("Entrada não permitida");
+      delay(1000);
+      
+      analogWrite(RED, 150);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+      analogWrite(GREEN, 0);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+      analogWrite(BLUE, 150);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
     }
-
 }
 
 cc3000_PubSubClient mqttclient(server.ip, 1883, callback, client, cc3000);
@@ -88,6 +119,14 @@ void debug(char *s) {
 
 
 void setup(void) {
+
+  pinMode(RED, OUTPUT);   // pré-determina o pino como saída
+  pinMode(GREEN, OUTPUT);   // pré-determina o pino como saída
+  pinMode(BLUE, OUTPUT);   // pré-determina o pino como saída
+  
+  analogWrite(RED, 150);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+  analogWrite(GREEN, 0);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
+  analogWrite(BLUE, 150);  // os valores do analogRead variam de 0 a 1023, os valores do analogWrite variam de 0 a 255
 
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, LOW);
@@ -119,7 +158,7 @@ void setup(void) {
 
   Serial.println(F("Inicializando Wifi CC3000"));
   
-  displayDriverMode();
+  //displayDriverMode();
 
   Serial.println(F("\nInicializando o CC3000 ..."));
   if (!cc3000.begin()) {
@@ -130,13 +169,13 @@ void setup(void) {
     Serial.println(F("Carregou"));
   }
 
-  uint16_t firmware = checkFirmwareVersion();
-  if ((firmware != 0x113) && (firmware != 0x118)) {
+  //uint16_t firmware = checkFirmwareVersion();
+/*  if ((firmware != 0x113) && (firmware != 0x118)) {
     Serial.println(F("Versao do firmware errada!"));
     for(;;);
-  }
+  }*/
   
-  displayMACAddress();
+  //displayMACAddress();
   
   Serial.println(F("\nDeletando perfis de conexoes antigas"));
   if (!cc3000.deleteProfiles()) {
@@ -163,9 +202,9 @@ void setup(void) {
   }
 
   /* Display the IP address DNS, Gateway, etc. */  
-  while (!displayConnectionDetails()) {
+  /*while (!displayConnectionDetails()) {
     delay(1000);
-  }
+  }*/
    
    // connect to the broker
    if (!client.connected()) {
@@ -175,9 +214,9 @@ void setup(void) {
    
    // did that last thing work? sweet, let's do something
    if(client.connected()) {
-    if (mqttclient.connect("ArduinoUnoClient-CC3000-A2", "iotocean", "NZZOLd0O66oLS0vpajiA123")) {
+    if (mqttclient.connect("ocean_nfc_reader_1", "iotocean", "NZZOLd0O66oLS0vpajiA123")) {
       Serial.println(F("Publicando"));
-      mqttclient.publish("/ocean/nfc/debug","A2 está online");
+      mqttclient.publish("/ocean/nfc/debug","ocean_nfc_reader_1 está online");
       mqttclient.subscribe("/ocean/nfc/porta");
     }
     else {
@@ -189,10 +228,20 @@ void setup(void) {
 
 
 void loop(void) {
+  Watchdog.reset();
+
+  Serial.println(millis());
   
-  delay(1000);
+  if (millis() > 300000) {
+    Serial.println(F("Resetando!!!"));
+    delay(1000);
+    asm volatile ("jmp 0");
+  }
+  // Make sure to reset watchdog every loop iteration!
   
-  Serial.println(F("Entrei no loop\n"));
+  //delay(1000);
+  
+  //Serial.println(F("Entrei no loop\n"));
   uint8_t success;
   uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
   uint8_t uidLength;                        // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
@@ -203,11 +252,11 @@ void loop(void) {
   success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength);
   
   if (success) {
-    // Display some basic information about the card
+    /*/ Display some basic information about the card
     Serial.println(F("Found an ISO14443A card"));
     Serial.print(F("  UID Length: "));Serial.print(uidLength, DEC);Serial.println(" bytes");
     Serial.print(F("  UID Value: "));
-    nfc.PrintHex(uid, uidLength);
+    nfc.PrintHex(uid, uidLength);*/
     
     if (uidLength == 4)
     {
@@ -219,9 +268,17 @@ void loop(void) {
       cardid |= uid[2];  
       cardid <<= 8;
       cardid |= uid[3]; 
-      Serial.print(F("Seems to be a Mifare Classic card #"));
-      Serial.println(cardid);
-
+      //Serial.print(F("Seems to be a Mifare Classic card #"));
+      //Serial.println(cardid);
+      for (int i = 0; i < 2; i++) {
+        if(cards[i] == cardid)
+        {
+          byte perm[5];
+          String("S").getBytes(perm, 5);
+          callback (NULL, perm, 0);
+          break;
+        }
+      }
         
           // Testa se ainda esta conectado
           if (!client.connected()) {
@@ -229,12 +286,12 @@ void loop(void) {
              client = cc3000.connectTCP(server.ip, 1883);
              
              if(client.connected()) {
-               if (mqttclient.connect("ArduinoUnoClient-Office-A2")) {
-                  mqttclient.publish("/ocean/nfc/debug","A2 está novamente online");
+               if (mqttclient.connect("ocean_nfc_reader_1")) {
+                  mqttclient.publish("/ocean/nfc/debug","ocean_nfc_reader_1 está novamente online");
                }
              } 
           } else {
-            Serial.println(F("else !client.connected()"));
+            //Serial.println(F("else !client.connected()"));
             // as per comment from LS_dev, platform is int 16bits
             sprintf(cardID,"%lu", cardid);
 
@@ -249,9 +306,10 @@ void loop(void) {
 
   mqttclient.loop(); // nunca esqueca disso!
   
-  Serial.println(F("Sai do loop\n"));
+  //Serial.println(F("Sai do loop\n"));
+  //digitalWrite(RELAY_PIN,HIGH);
 }
-
+/*
 void displayDriverMode(void)
 {
   #ifdef CC3000_TINY_DRIVER
@@ -297,11 +355,11 @@ uint16_t checkFirmwareVersion(void)
   return version;
 }
 
-/**************************************************************************/
+**************************************************************************/
 /*!
     @brief  Tries to read the 6-byte MAC address of the CC3000 module
-*/
-/**************************************************************************/
+
+**************************************************************************
 void displayMACAddress(void)
 {
   uint8_t macAddress[6];
@@ -318,11 +376,11 @@ void displayMACAddress(void)
 }
 
 
-/**************************************************************************/
-/*!
+*************************************************************************
+*!
     @brief  Tries to read the IP address and other connection details
 */
-/**************************************************************************/
+/**************************************************************************
 bool displayConnectionDetails(void)
 {
   uint32_t ipAddress, netmask, gateway, dhcpserv, dnsserv;
@@ -343,5 +401,5 @@ bool displayConnectionDetails(void)
     return true;
   }
 }
-
+*/
 

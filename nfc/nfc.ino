@@ -5,7 +5,8 @@
 //#include <ccspi.h>
 //#include <SPI.h>
 #include <cc3000_PubSubClient.h>
-#include <Adafruit_SleepyDog.h>
+//#include <Adafruit_SleepyDog.h>
+#include <avr/wdt.h>
 
 #define RELAY_PIN   A5
 #define BUZZER_PIN  8
@@ -119,6 +120,9 @@ void debug(char *s) {
 
 
 void setup(void) {
+  //wdt_enable(WDTO_8S);
+
+  comeco:
 
   pinMode(RED, OUTPUT);   // pré-determina o pino como saída
   pinMode(GREEN, OUTPUT);   // pré-determina o pino como saída
@@ -197,8 +201,13 @@ void setup(void) {
   
   /* Wait for DHCP to complete */
   Serial.println(F("Requisitando DHCP"));
+  int timeOut = 0;
   while (!cc3000.checkDHCP()) {
     delay(100); // ToDo: Insert a DHCP timeout!
+    Serial.print(".");
+    if (timeOut++ == 120) {
+      goto comeco;
+    }
   }
 
   /* Display the IP address DNS, Gateway, etc. */  
@@ -224,19 +233,22 @@ void setup(void) {
     }
    } 
   nfc.setPassiveActivationRetries(0x1E);
+
+  wdt_enable(WDTO_8S);
 }
 
 
 void loop(void) {
-  Watchdog.reset();
+  //Watchdog.reset();
+  wdt_reset();
 
   Serial.println(millis());
-  
+  /*
   if (millis() > 300000) {
     Serial.println(F("Resetando!!!"));
     delay(1000);
     asm volatile ("jmp 0");
-  }
+  }*/
   // Make sure to reset watchdog every loop iteration!
   
   //delay(1000);
